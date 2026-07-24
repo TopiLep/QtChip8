@@ -1,2 +1,0 @@
-C:\Qt\Tools\mingw1310_64\bin\ar.exe qc libchip8.a CMakeFiles/chip8.dir/chip8_autogen/mocs_compilation.cpp.obj CMakeFiles/chip8.dir/chip8.cpp.obj
-C:\Qt\Tools\mingw1310_64\bin\ranlib.exe libchip8.a

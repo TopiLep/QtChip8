@@ -1,5 +1,0 @@
-set(__QT_DEPLOY_TARGET_chip8_FILE C:/Users/topil/Documents/Chip8Emulator/build/Desktop_Qt_6_11_0_MinGW_64_bit-Debug/src/chip8/libchip8.a)
-set(__QT_DEPLOY_TARGET_chip8_TYPE STATIC_LIBRARY)
-set(__QT_DEPLOY_TARGET_Chip8Emulator_FILE C:/Users/topil/Documents/Chip8Emulator/build/Desktop_Qt_6_11_0_MinGW_64_bit-Debug/Chip8Emulator.exe)
-set(__QT_DEPLOY_TARGET_Chip8Emulator_TYPE EXECUTABLE)
-set(__QT_DEPLOY_TARGET_Chip8Emulator_RUNTIME_DLLS C:/Qt/6.11.0/mingw_64/bin/Qt6Widgets.dll;C:/Qt/6.11.0/mingw_64/bin/Qt6Gui.dll;C:/Qt/6.11.0/mingw_64/bin/Qt6Core.dll)
