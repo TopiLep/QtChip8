@@ -14,6 +14,9 @@ public:
     bool loadROM(const std::filesystem::path& path);
 
     const uint8_t* getDisplayBuffer() const;
+    const bool isDisplayDirty();
+    void setDispalyDirty(bool state);
+
     uint8_t getSoundTimer() const;
     void keyPress(uint8_t key);
     void keyRelease(uint8_t key);
@@ -21,6 +24,7 @@ public:
 private:
     //Display
     uint8_t display[32][64]{}; //64x32 display of
+    bool DisplayDirty = false;
 
     //Memory
     uint8_t memory[4096]{}; //4KB of simulated ram
@@ -37,6 +41,7 @@ private:
     //Timers
     uint8_t delayTimer{};
     uint8_t soundTimer{};
+    void updateTimer();
 
     //keypad
     uint8_t keypad[16]{};

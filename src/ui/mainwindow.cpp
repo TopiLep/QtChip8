@@ -13,13 +13,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     QObject::connect(m_cycleTimer, &QTimer::timeout, this, [this]()
     {
-        m_chip.cycle();
-        ui->displaywidget->updateFrameBuffer();
+        for (int i = 0; i < 12; ++i)
+            m_chip.cycle();
+        if(m_chip.isDisplayDirty()) {
+            ui->displaywidget->updateFrameBuffer();
+            m_chip.setDispalyDirty(false);
+        }
+
     });
 
     QObject::connect(ui->actionOpen_ROM, &QAction::triggered, this, &MainWindow::openROM);
 
-    m_cycleTimer->start(2);
+    m_cycleTimer->start(1000 / 60); //60Hz timer
 }
 
 MainWindow::~MainWindow()
