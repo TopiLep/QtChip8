@@ -4,6 +4,13 @@
 #include <QMainWindow>
 #include <chip8.h>
 #include <qtimer.h>
+#include <inputmap.h>
+
+enum class emulatorState {
+    Stopped, //No ROM running
+    Running, //CPU excecuting instructions
+    Paused, //Excecution is stopped
+};
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -24,19 +31,15 @@ private:
 
     //emulator
     chip8 m_chip;
+    void cycleChip();
+    emulatorState m_state = emulatorState::Stopped;
 
     //timers
+    int cyclesPerTick = 12;
     QTimer* m_cycleTimer;
 
     //keymap
-    int keyMap[16] = {
-        Qt::Key_X, Qt::Key_1, Qt::Key_2,
-        Qt::Key_3, Qt::Key_Q, Qt::Key_W,
-        Qt::Key_E, Qt::Key_A, Qt::Key_S,
-        Qt::Key_D, Qt::Key_Z, Qt::Key_C,
-        Qt::Key_4, Qt::Key_R, Qt::Key_F,
-        Qt::Key_V
-    };
+    InputMap m_inputMap;
 
 
     void openROM();

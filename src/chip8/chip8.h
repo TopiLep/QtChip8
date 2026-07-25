@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <cstring>
 
 class chip8 {
 public:
@@ -20,6 +21,8 @@ public:
     uint8_t getSoundTimer() const;
     void keyPress(uint8_t key);
     void keyRelease(uint8_t key);
+
+    void resetEmulatorState();
 
 private:
     //Display

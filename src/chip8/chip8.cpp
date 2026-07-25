@@ -3,7 +3,6 @@
 chip8::chip8()
 {
 
-
 }
 
 void chip8::cycle()
@@ -35,6 +34,8 @@ void chip8::cycle()
 
     uint16_t oldPC = pc;
     stall = false;
+
+    //printf("PC=0x%03X opcode=0x%04X\n", pc, opcode);
 
     switch (nib1)
     {
@@ -192,7 +193,34 @@ bool chip8::loadROM(const std::filesystem::path& path)
         return false;
     }
 
+    resetEmulatorState();
+    memset(memory, 0, sizeof(memory));
+
     file.read(reinterpret_cast<char*>(&memory[0x200]), size);
+
+    const unsigned int FONTSET_START_ADDRESS = 0x50;
+    const uint8_t fontset[80] = {
+        0xF0, 0x90, 0x90, 0x90, 0xF0,		// 0
+        0x20, 0x60, 0x20, 0x20, 0x70,		// 1
+        0xF0, 0x10, 0xF0, 0x80, 0xF0,		// 2
+        0xF0, 0x10, 0xF0, 0x10, 0xF0,		// 3
+        0x90, 0x90, 0xF0, 0x10, 0x10,		// 4
+        0xF0, 0x80, 0xF0, 0x10, 0xF0,		// 5
+        0xF0, 0x80, 0xF0, 0x90, 0xF0,		// 6
+        0xF0, 0x10, 0x20, 0x40, 0x40,		// 7
+        0xF0, 0x90, 0xF0, 0x90, 0xF0,		// 8
+        0xF0, 0x90, 0xF0, 0x10, 0xF0,		// 9
+        0xF0, 0x90, 0xF0, 0x90, 0x90,		// A
+        0xE0, 0x90, 0xE0, 0x90, 0xE0,		// B
+        0xF0, 0x80, 0x80, 0x80, 0xF0,		// C
+        0xE0, 0x90, 0x90, 0x90, 0xE0,		// D
+        0xF0, 0x80, 0xF0, 0x80, 0xF0,		// E
+        0xF0, 0x80, 0xF0, 0x80, 0x80		// F
+    };
+
+    for (int i = 0; i < 80; ++i)
+        memory[FONTSET_START_ADDRESS + i] = fontset[i];
+
 
     return true;
 }
@@ -237,6 +265,22 @@ void chip8::updateTimer()
         soundTimer--;
 }
 
+void chip8::resetEmulatorState()
+{
+    pc = 0x200;
+    sp = 0;
+    I = 0;
+    memset(V, 0, sizeof(V));
+    memset(stack, 0, sizeof(stack));
+    memset(display, 0, sizeof(display));
+    memset(keypad, 0, sizeof(keypad));
+    delayTimer = 0;
+    soundTimer = 0;
+
+    DisplayDirty = true;
+    stall = false;
+}
+
 void chip8::op_00E0()
 {
     for (int y = 0; y < 32; y++)
@@ -251,8 +295,10 @@ void chip8::op_00E0()
 
 void chip8::op_00EE()
 {
-    sp--;
-    pc = stack[sp];
+    if (sp > 0) {
+        sp--;
+        pc = stack[sp];
+    }
 }
 
 void chip8::op_1NNN(uint16_t nnn)
@@ -334,13 +380,9 @@ void chip8::op_8XY4(uint8_t x, uint8_t y)
 
 void chip8::op_8XY5(uint8_t x, uint8_t y)
 {
-    if (V[x] > V[y]) {
-        V[15] = 1;
-    }
-    else {
-        V[15] = 0;
-    }
+    uint8_t flag = (V[x] >= V[y]) ? 1 : 0;
     V[x] -= V[y];
+    V[15] = flag;
 }
 
 void chip8::op_8XY6(uint8_t x)
@@ -351,13 +393,9 @@ void chip8::op_8XY6(uint8_t x)
 
 void chip8::op_8XY7(uint8_t x, uint8_t y)
 {
-    if (V[y] > V[x]) {
-        V[15] = 1;
-    }
-    else {
-        V[15] = 0;
-    }
+    uint8_t flag = (V[y] >= V[x]) ? 1 : 0;
     V[x] = V[y] - V[x];
+    V[15] = flag;
 }
 
 void chip8::op_8XYE(uint8_t x)
@@ -433,6 +471,7 @@ void chip8::op_FX0A(uint8_t x)
     for (int i = 0; i < 16; i++) {
         if (keypad[i] == 1) {
             V[x] = i;
+            stall = false;
             return;
         }
     }
