@@ -111,6 +111,9 @@ void MainWindow::rebuildRecentMenu()
 
     for(const QString &path : m_recentRoms)
     {
+        if (!QFile::exists(path))
+            continue;
+
         QAction *action = ui->menuOpen_recent->addAction(QFileInfo(path).fileName());
 
         action->setData(path);
