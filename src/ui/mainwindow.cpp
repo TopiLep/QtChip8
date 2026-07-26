@@ -9,6 +9,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    loadRecentRoms();
+
     ui->displaywidget->setChip8(&m_chip);
 
     QObject::connect(m_cycleTimer, &QTimer::timeout, this, [this] {
@@ -64,7 +66,9 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    QObject::connect(ui->actionOpen_ROM, &QAction::triggered, this, &MainWindow::openROM);
+    QObject::connect(ui->actionOpen_ROM, &QAction::triggered, this, [this]() {
+        openROM(openROMPromt());
+    });
 
     m_cycleTimer->start(1000 / 60); //60Hz timer
 }
@@ -72,6 +76,49 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::addRecentRom(const QString &file)
+{
+    m_recentRoms.removeAll(file);
+    m_recentRoms.prepend(file);
+
+    while (m_recentRoms.size() > 10)
+        m_recentRoms.removeLast();
+
+    saveRecentRoms();
+    rebuildRecentMenu();
+}
+
+void MainWindow::saveRecentRoms()
+{
+    QSettings settings("io.github.topilep", "Chip8Emulator");
+
+    settings.setValue("recentFiles/list", m_recentRoms);
+}
+
+void MainWindow::loadRecentRoms()
+{
+    QSettings settings("io.github.topilep", "Chip8Emulator");
+    m_recentRoms = settings.value("recentFiles/list").toStringList();
+
+    rebuildRecentMenu();
+}
+
+void MainWindow::rebuildRecentMenu()
+{
+    ui->menuOpen_recent->clear();
+
+    for(const QString &path : m_recentRoms)
+    {
+        QAction *action = ui->menuOpen_recent->addAction(QFileInfo(path).fileName());
+
+        action->setData(path);
+
+        connect(action, &QAction::triggered, this, [this, action]() {
+            openROM(action->data().toString());
+        });
+    }
 }
 
 void MainWindow::cycleChip()
@@ -84,15 +131,19 @@ void MainWindow::cycleChip()
     }
 }
 
-void MainWindow::openROM()
-{   
-    QString file = QFileDialog::getOpenFileName(
-        this,
-        "Open CHIP-8 ROM",
-        "",
-        "CHIP-8 ROM (*.ch8 *.rom);;All Files (*)");
+QString MainWindow::openROMPromt()
+{
+    return QFileDialog::getOpenFileName(
+               this,
+               "Open CHIP-8 ROM",
+               "",
+               "CHIP-8 ROM (*.ch8 *.rom);;All Files (*)");
+}
 
+void MainWindow::openROM(QString file)
+{   
     if (m_chip.loadROM(file.toStdString())) {
+        addRecentRom(file);
         m_state = emulatorState::Running;
     }
 }

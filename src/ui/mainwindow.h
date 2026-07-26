@@ -5,6 +5,7 @@
 #include <chip8.h>
 #include <qtimer.h>
 #include <inputmap.h>
+#include <QSettings>
 
 enum class emulatorState {
     Stopped, //No ROM running
@@ -29,6 +30,13 @@ public:
 private:
     Ui::MainWindow *ui;
 
+    //Recent files
+    QStringList m_recentRoms;
+    void addRecentRom(const QString &file);
+    void saveRecentRoms();
+    void loadRecentRoms();
+    void rebuildRecentMenu();
+
     //emulator
     chip8 m_chip;
     void cycleChip();
@@ -41,8 +49,9 @@ private:
     //keymap
     InputMap m_inputMap;
 
-
-    void openROM();
+    //open rom
+    QString openROMPromt();
+    void openROM(QString file);
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;
