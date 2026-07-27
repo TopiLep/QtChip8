@@ -281,6 +281,21 @@ void chip8::resetEmulatorState()
     stall = false;
 }
 
+const uint8_t *chip8::getMemory() const
+{
+    return memory;
+}
+
+uint16_t chip8::getPC() const
+{
+    return pc;
+}
+
+uint16_t chip8::getI() const
+{
+    return I;
+}
+
 void chip8::op_00E0()
 {
     for (int y = 0; y < 32; y++)

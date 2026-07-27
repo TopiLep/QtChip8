@@ -14,6 +14,7 @@ public:
     void cycleTimers();
     bool loadROM(const std::filesystem::path& path);
 
+    //display
     const uint8_t* getDisplayBuffer() const;
     const bool isDisplayDirty();
     void setDispalyDirty(bool state);
@@ -23,6 +24,11 @@ public:
     void keyRelease(uint8_t key);
 
     void resetEmulatorState();
+
+    //some getters for memory
+    const uint8_t* getMemory() const;
+    uint16_t getPC() const;
+    uint16_t getI() const;
 
 private:
     //Display

@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QObject::connect(m_cycleTimer, &QTimer::timeout, this, [this] {
         if (m_state == emulatorState::Running) {
-            cycleChip();
+            cycleChip(cyclesPerTick);
         }
     });
 
@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     QObject::connect(ui->StepButton, &QToolButton::clicked, this, [this]() {
-        cycleChip();
+        cycleChip(1);
     });
 
     QObject::connect(ui->SpeedComboBox, &QComboBox::currentIndexChanged, this, [this](int index) {
@@ -69,6 +69,8 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->actionOpen_ROM, &QAction::triggered, this, [this]() {
         openROM(openROMPromt());
     });
+
+    QObject::connect(ui->actionMemory, &QAction::triggered, this, &MainWindow::showMemoryWindow);
 
     m_cycleTimer->start(1000 / 60); //60Hz timer
 }
@@ -124,14 +126,28 @@ void MainWindow::rebuildRecentMenu()
     }
 }
 
-void MainWindow::cycleChip()
+void MainWindow::cycleChip(int times)
 {
-    for (int i = 0; i < cyclesPerTick; ++i)
+    for (int i = 0; i < times; ++i)
         m_chip.cycle();
+
     if(m_chip.isDisplayDirty()) {
         ui->displaywidget->updateFrameBuffer();
         m_chip.setDispalyDirty(false);
     }
+
+    if (m_memoryWindow && m_memoryWindow->isVisible())
+        m_memoryWindow->setMemory(m_chip.getMemory(), m_chip.getPC(), m_chip.getI());
+}
+
+void MainWindow::showMemoryWindow()
+{
+    if (!m_memoryWindow)
+        m_memoryWindow = new MemoryWindow(this);
+
+    m_memoryWindow->show();
+    m_memoryWindow->raise();
+    m_memoryWindow->activateWindow();
 }
 
 QString MainWindow::openROMPromt()
@@ -147,7 +163,8 @@ void MainWindow::openROM(QString file)
 {   
     if (m_chip.loadROM(file.toStdString())) {
         addRecentRom(file);
-        m_state = emulatorState::Running;
+        if (m_state == emulatorState::Stopped)
+            m_state = emulatorState::Running;
     }
 }
 

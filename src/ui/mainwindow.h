@@ -6,6 +6,7 @@
 #include <qtimer.h>
 #include <inputmap.h>
 #include <QSettings>
+#include <memorywindow.h>
 
 enum class emulatorState {
     Stopped, //No ROM running
@@ -39,8 +40,12 @@ private:
 
     //emulator
     chip8 m_chip;
-    void cycleChip();
+    void cycleChip(int times);
     emulatorState m_state = emulatorState::Stopped;
+
+    //memroy window
+    void showMemoryWindow();
+    MemoryWindow *m_memoryWindow = nullptr;
 
     //timers
     int cyclesPerTick = 12;

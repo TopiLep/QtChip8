@@ -15,6 +15,8 @@ qt_add_executable(Chip8Emulator
     src/ui/mainwindow.ui
     src/ui/displaywidget.h src/ui/displaywidget.cpp
     src/ui/inputmap.h src/ui/inputmap.cpp
+    src/ui/memorywindow.h src/ui/memorywindow.cpp src/ui/memorywindow.ui
+
 )
 
 target_include_directories(Chip8Emulator

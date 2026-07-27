@@ -226,7 +226,15 @@
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menuEmulator">
+    <property name="title">
+     <string>Emulator</string>
+    </property>
+    <addaction name="actionMemory"/>
+    <addaction name="actionUnload_ROM"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEmulator"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen_ROM">
@@ -242,6 +250,16 @@
   <action name="actiondaw">
    <property name="text">
     <string>daw</string>
+   </property>
+  </action>
+  <action name="actionMemory">
+   <property name="text">
+    <string>Memory</string>
+   </property>
+  </action>
+  <action name="actionUnload_ROM">
+   <property name="text">
+    <string>Unload ROM</string>
    </property>
   </action>
  </widget>
