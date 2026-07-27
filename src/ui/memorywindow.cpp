@@ -7,6 +7,7 @@ MemoryWindow::MemoryWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //read only
     ui->MemoryTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     ui->MemoryTable->setRowCount(256);

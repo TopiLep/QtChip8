@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     loadRecentRoms();
 
     ui->displaywidget->setChip8(&m_chip);
+    ui->displaywidget->setFocusPolicy(Qt::StrongFocus);
 
     QObject::connect(m_cycleTimer, &QTimer::timeout, this, [this] {
         if (m_state == emulatorState::Running) {
@@ -32,8 +33,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     QObject::connect(ui->ResetButton, &QToolButton::clicked, this, [this]()
     {
-        qDebug() << "reset";
         m_chip.resetEmulatorState();
+        ui->displaywidget->updateFrameBuffer();
     });
 
     QObject::connect(ui->StepButton, &QToolButton::clicked, this, [this]() {
@@ -64,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
             cyclesPerTick = 12;
             break;
         }
+
     });
 
     QObject::connect(ui->actionOpen_ROM, &QAction::triggered, this, [this]() {
@@ -131,6 +133,8 @@ void MainWindow::cycleChip(int times)
     for (int i = 0; i < times; ++i)
         m_chip.cycle();
 
+    m_chip.cycleTimers();
+
     if(m_chip.isDisplayDirty()) {
         ui->displaywidget->updateFrameBuffer();
         m_chip.setDispalyDirty(false);
@@ -148,6 +152,7 @@ void MainWindow::showMemoryWindow()
     m_memoryWindow->show();
     m_memoryWindow->raise();
     m_memoryWindow->activateWindow();
+    m_memoryWindow->setMemory(m_chip.getMemory(), m_chip.getPC(), m_chip.getI());
 }
 
 QString MainWindow::openROMPromt()

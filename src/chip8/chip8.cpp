@@ -32,10 +32,8 @@ void chip8::cycle()
     uint16_t kk = opcode;
     kk = kk & 0x00FF;
 
-    uint16_t oldPC = pc;
-    stall = false;
-
     //printf("PC=0x%03X opcode=0x%04X\n", pc, opcode);
+    pc += 2;
 
     switch (nib1)
     {
@@ -163,10 +161,6 @@ void chip8::cycle()
         // Unknown opcode
         break;
     }
-
-    if (pc == oldPC && !stall) {
-        pc += 2;
-    }
 }
 
 void chip8::cycleTimers()
@@ -278,7 +272,6 @@ void chip8::resetEmulatorState()
     soundTimer = 0;
 
     DisplayDirty = true;
-    stall = false;
 }
 
 const uint8_t *chip8::getMemory() const
@@ -324,7 +317,7 @@ void chip8::op_1NNN(uint16_t nnn)
 void chip8::op_2NNN(uint16_t nnn)
 {
     if (sp < 16) {
-        stack[sp] = pc + 2;
+        stack[sp] = pc;
         sp++;
     }
     pc = nnn;
@@ -486,11 +479,10 @@ void chip8::op_FX0A(uint8_t x)
     for (int i = 0; i < 16; i++) {
         if (keypad[i] == 1) {
             V[x] = i;
-            stall = false;
             return;
         }
     }
-    stall = true;
+    pc -= 2;
 }
 
 void chip8::op_FX15(uint8_t x)

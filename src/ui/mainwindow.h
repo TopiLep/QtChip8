@@ -47,7 +47,7 @@ private:
     void showMemoryWindow();
     MemoryWindow *m_memoryWindow = nullptr;
 
-    //timers
+    //cycles
     int cyclesPerTick = 12;
     QTimer* m_cycleTimer;
 
