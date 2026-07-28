@@ -234,10 +234,7 @@ void chip8::setDispalyDirty(bool state)
     DisplayDirty = state;
 }
 
-uint8_t chip8::getSoundTimer() const
-{
-    return soundTimer;
-}
+
 
 void chip8::keyPress(uint8_t key)
 {
@@ -436,7 +433,6 @@ void chip8::op_CXKK(uint8_t x, uint8_t kk)
 
 void chip8::op_DXYN(uint8_t x, uint8_t y, uint8_t n)
 {
-    printf("DXYN x=%d y=%d n=%d I=0x%X\n", V[x], V[y], n, I);
     V[15] = 0;
     for (int Y = 0; Y < n; Y++) {
         uint8_t byte = memory[I + Y];

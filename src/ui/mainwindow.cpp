@@ -14,6 +14,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->displaywidget->setChip8(&m_chip);
     ui->displaywidget->setFocusPolicy(Qt::StrongFocus);
 
+    //initialize beeper
+    beep.setSource(QUrl("qrc:/sounds/beep.wav"));
+    beep.setLoopCount(QSoundEffect::Infinite);
+    beep.setVolume(0.1f);
+
     QObject::connect(m_cycleTimer, &QTimer::timeout, this, [this] {
         if (m_state == emulatorState::Running) {
             cycleChip(cyclesPerTick);
@@ -113,7 +118,7 @@ void MainWindow::rebuildRecentMenu()
 {
     ui->menuOpen_recent->clear();
 
-    for(const QString &path : m_recentRoms)
+    for(const QString &path : std::as_const(m_recentRoms))
     {
         if (!QFile::exists(path))
             continue;
@@ -142,6 +147,13 @@ void MainWindow::cycleChip(int times)
 
     if (m_memoryWindow && m_memoryWindow->isVisible())
         m_memoryWindow->setMemory(m_chip.getMemory(), m_chip.getPC(), m_chip.getI());
+
+    if (m_chip.getSoundTimer() > 0 && !beep.isPlaying()) {
+        beep.play();
+    }
+    if (m_chip.getSoundTimer() == 0 && beep.isPlaying()) {
+        beep.stop();
+    }
 }
 
 void MainWindow::showMemoryWindow()

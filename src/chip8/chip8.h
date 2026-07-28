@@ -19,7 +19,11 @@ public:
     const bool isDisplayDirty();
     void setDispalyDirty(bool state);
 
-    uint8_t getSoundTimer() const;
+    uint8_t getSoundTimer() const
+    {
+        return soundTimer;
+    }
+
     void keyPress(uint8_t key);
     void keyRelease(uint8_t key);
 

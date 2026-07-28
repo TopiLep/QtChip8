@@ -7,6 +7,7 @@
 #include <inputmap.h>
 #include <QSettings>
 #include <memorywindow.h>
+#include <QSoundEffect>
 
 enum class emulatorState {
     Stopped, //No ROM running
@@ -42,6 +43,7 @@ private:
     chip8 m_chip;
     void cycleChip(int times);
     emulatorState m_state = emulatorState::Stopped;
+    QSoundEffect beep;
 
     //memroy window
     void showMemoryWindow();

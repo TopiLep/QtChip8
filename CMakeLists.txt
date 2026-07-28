@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(Chip8Emulator LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Multimedia)
 
 qt_standard_project_setup()
 
@@ -16,7 +16,12 @@ qt_add_executable(Chip8Emulator
     src/ui/displaywidget.h src/ui/displaywidget.cpp
     src/ui/inputmap.h src/ui/inputmap.cpp
     src/ui/memorywindow.h src/ui/memorywindow.cpp src/ui/memorywindow.ui
+)
 
+qt_add_resources(Chip8Emulator "sounds"
+    PREFIX "/"
+    FILES
+        sounds/beep.wav
 )
 
 target_include_directories(Chip8Emulator
@@ -30,6 +35,7 @@ target_link_libraries(Chip8Emulator
         chip8
         Qt::Core
         Qt::Widgets
+        Qt::Multimedia
 )
 
 install(TARGETS Chip8Emulator
