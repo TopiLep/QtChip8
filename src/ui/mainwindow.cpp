@@ -63,6 +63,10 @@ MainWindow::MainWindow(QWidget *parent)
         openROM(openROMPrompt());
     });
 
+    QObject::connect(ui->actionExit, &QAction::triggered, this, [this]() {
+        close();
+    });
+
     //emulator menu
     QObject::connect(ui->actionMemory, &QAction::triggered, this, &MainWindow::showMemoryWindow);
 
@@ -176,6 +180,8 @@ void MainWindow::openROM(QString file)
         addRecentRom(file);
         if (m_state == emulatorState::Stopped)
             m_state = emulatorState::Running;
+    } else {
+        statusBar()->showMessage("Failed to load ROM", 30000);
     }
 }
 
