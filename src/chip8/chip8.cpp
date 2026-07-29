@@ -171,6 +171,8 @@ void chip8::cycleTimers()
         --delayTimer;
 }
 
+
+
 bool chip8::loadROM(const std::filesystem::path& path)
 {
     std::ifstream file(path, std::ios::binary);
@@ -224,17 +226,20 @@ const uint8_t *chip8::getDisplayBuffer() const
     return &display[0][0];
 }
 
-const bool chip8::isDisplayDirty()
+bool chip8::isDisplayDirty() const
 {
-    return DisplayDirty;
+    return displayDirty;
 }
 
-void chip8::setDispalyDirty(bool state)
+void chip8::setDisplayDirty(bool state)
 {
-    DisplayDirty = state;
+    displayDirty = state;
 }
 
-
+uint8_t chip8::getSoundTimer() const
+{
+    return soundTimer;
+}
 
 void chip8::keyPress(uint8_t key)
 {
@@ -248,13 +253,7 @@ void chip8::keyRelease(uint8_t key)
         keypad[key] = 0;
 }
 
-void chip8::updateTimer()
-{
-    if (delayTimer > 0)
-        delayTimer--;
-    if (soundTimer > 0)
-        soundTimer--;
-}
+
 
 void chip8::resetEmulatorState()
 {
@@ -268,7 +267,13 @@ void chip8::resetEmulatorState()
     delayTimer = 0;
     soundTimer = 0;
 
-    DisplayDirty = true;
+    displayDirty = true;
+}
+
+void chip8::unloadROM()
+{
+    memset(memory, 0, sizeof(memory));
+    resetEmulatorState();
 }
 
 const uint8_t *chip8::getMemory() const
@@ -295,7 +300,7 @@ void chip8::op_00E0()
             display[y][x] = 0;
         }
     }
-    DisplayDirty = true;
+    displayDirty = true;
 }
 
 void chip8::op_00EE()
@@ -448,7 +453,7 @@ void chip8::op_DXYN(uint8_t x, uint8_t y, uint8_t n)
         }
     }
 
-    DisplayDirty = true;
+    displayDirty = true;
 }
 
 void chip8::op_EX9E(uint8_t x)

@@ -16,18 +16,16 @@ public:
 
     //display
     const uint8_t* getDisplayBuffer() const;
-    const bool isDisplayDirty();
-    void setDispalyDirty(bool state);
+    bool isDisplayDirty() const;
+    void setDisplayDirty(bool state);
 
-    uint8_t getSoundTimer() const
-    {
-        return soundTimer;
-    }
+    uint8_t getSoundTimer() const;
 
     void keyPress(uint8_t key);
     void keyRelease(uint8_t key);
 
     void resetEmulatorState();
+    void unloadROM();
 
     //some getters for memory
     const uint8_t* getMemory() const;
@@ -37,7 +35,7 @@ public:
 private:
     //Display
     uint8_t display[32][64]{}; //64x32 display of
-    bool DisplayDirty = false;
+    bool displayDirty = false;
 
     //Memory
     uint8_t memory[4096]{}; //4KB of simulated ram
@@ -54,7 +52,6 @@ private:
     //Timers
     uint8_t delayTimer{};
     uint8_t soundTimer{};
-    void updateTimer();
 
     //keypad
     uint8_t keypad[16]{};

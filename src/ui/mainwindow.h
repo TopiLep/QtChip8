@@ -2,17 +2,18 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <chip8.h>
-#include <qtimer.h>
-#include <inputmap.h>
+#include <QTimer>
 #include <QSettings>
-#include <memorywindow.h>
 #include <QSoundEffect>
+
+#include "chip8.h"
+#include "inputmap.h"
+#include "memorywindow.h"
 
 enum class emulatorState {
     Stopped, //No ROM running
-    Running, //CPU excecuting instructions
-    Paused, //Excecution is stopped
+    Running, //CPU executing instructions
+    Paused, //Execution is stopped
 };
 
 QT_BEGIN_NAMESPACE
@@ -43,21 +44,21 @@ private:
     chip8 m_chip;
     void cycleChip(int times);
     emulatorState m_state = emulatorState::Stopped;
-    QSoundEffect beep;
+    QSoundEffect m_beep;
 
-    //memroy window
+    //memory window
     void showMemoryWindow();
     MemoryWindow *m_memoryWindow = nullptr;
 
     //cycles
-    int cyclesPerTick = 12;
+    int m_cyclesPerTick = 12;
     QTimer* m_cycleTimer;
 
     //keymap
     InputMap m_inputMap;
 
     //open rom
-    QString openROMPromt();
+    QString openROMPrompt();
     void openROM(QString file);
 
 protected:

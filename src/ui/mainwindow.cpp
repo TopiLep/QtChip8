@@ -9,22 +9,26 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //load recent roms into the menu
     loadRecentRoms();
 
+    //initialize display
     ui->displaywidget->setChip8(&m_chip);
     ui->displaywidget->setFocusPolicy(Qt::StrongFocus);
 
     //initialize beeper
-    beep.setSource(QUrl("qrc:/sounds/beep.wav"));
-    beep.setLoopCount(QSoundEffect::Infinite);
-    beep.setVolume(0.1f);
+    m_beep.setSource(QUrl("qrc:/sounds/beep.wav"));
+    m_beep.setLoopCount(QSoundEffect::Infinite);
+    m_beep.setVolume(0.1f);
 
+    //timer
     QObject::connect(m_cycleTimer, &QTimer::timeout, this, [this] {
         if (m_state == emulatorState::Running) {
-            cycleChip(cyclesPerTick);
+            cycleChip(m_cyclesPerTick);
         }
     });
 
+    //emulator play controls
     QObject::connect(ui->PlayButton, &QToolButton::clicked, this, [this](bool checked) {
         if (checked) {
             m_state = emulatorState::Paused;
@@ -47,38 +51,23 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     QObject::connect(ui->SpeedComboBox, &QComboBox::currentIndexChanged, this, [this](int index) {
-        switch (index) {
-        case 0:
-            cyclesPerTick = 1;
-            break;
-        case 1:
-            cyclesPerTick = 3;
-            break;
-        case 2:
-            cyclesPerTick = 6;
-            break;
-        case 3:
-            cyclesPerTick = 12;
-            break;
-        case 4:
-            cyclesPerTick = 24;
-            break;
-        case 5:
-            cyclesPerTick = 48;
-            break;
-        default:
-            cyclesPerTick = 12;
-            break;
-        }
-
+        static const int speeds[] = {1, 3, 6, 12, 24, 48};
+        m_cyclesPerTick = (index >= 0 && index < 6) ? speeds[index] : 12;
     });
 
+    //file menu
     QObject::connect(ui->actionOpen_ROM, &QAction::triggered, this, [this]() {
-        openROM(openROMPromt());
+        openROM(openROMPrompt());
     });
 
+    //emulator menu
     QObject::connect(ui->actionMemory, &QAction::triggered, this, &MainWindow::showMemoryWindow);
 
+    QObject::connect(ui->actionUnload_ROM, &QAction::triggered, this, [this]() {
+        m_chip.unloadROM();
+    });
+
+    //start timer
     m_cycleTimer->start(1000 / 60); //60Hz timer
 }
 
@@ -142,17 +131,17 @@ void MainWindow::cycleChip(int times)
 
     if(m_chip.isDisplayDirty()) {
         ui->displaywidget->updateFrameBuffer();
-        m_chip.setDispalyDirty(false);
+        m_chip.setDisplayDirty(false);
     }
 
     if (m_memoryWindow && m_memoryWindow->isVisible())
         m_memoryWindow->setMemory(m_chip.getMemory(), m_chip.getPC(), m_chip.getI());
 
-    if (m_chip.getSoundTimer() > 0 && !beep.isPlaying()) {
-        beep.play();
+    if (m_chip.getSoundTimer() > 0 && !m_beep.isPlaying()) {
+        m_beep.play();
     }
-    if (m_chip.getSoundTimer() == 0 && beep.isPlaying()) {
-        beep.stop();
+    if (m_chip.getSoundTimer() == 0 && m_beep.isPlaying()) {
+        m_beep.stop();
     }
 }
 
@@ -167,7 +156,7 @@ void MainWindow::showMemoryWindow()
     m_memoryWindow->setMemory(m_chip.getMemory(), m_chip.getPC(), m_chip.getI());
 }
 
-QString MainWindow::openROMPromt()
+QString MainWindow::openROMPrompt()
 {
     return QFileDialog::getOpenFileName(
                this,
