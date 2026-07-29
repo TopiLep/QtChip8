@@ -33,9 +33,11 @@ MainWindow::MainWindow(QWidget *parent)
         if (checked) {
             m_state = emulatorState::Paused;
             ui->PlayButton->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::MediaPlaybackPause));
+            statusBar()->showMessage("Emulator paused", 3000);
         } else {
             m_state = emulatorState::Running;
             ui->PlayButton->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::MediaPlaybackStart));
+            statusBar()->showMessage("Emulator resumed", 3000);
         }
         ui->StepButton->setEnabled(checked);
     });
@@ -44,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     {
         m_chip.resetEmulatorState();
         ui->displaywidget->updateFrameBuffer();
+        statusBar()->showMessage("Emulator state reset", 3000);
     });
 
     QObject::connect(ui->StepButton, &QToolButton::clicked, this, [this]() {
@@ -65,6 +68,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     QObject::connect(ui->actionUnload_ROM, &QAction::triggered, this, [this]() {
         m_chip.unloadROM();
+        m_state = emulatorState::Stopped;
+        statusBar()->showMessage("Rom unloaded", 3000);
     });
 
     //start timer

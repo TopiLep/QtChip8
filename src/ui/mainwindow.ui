@@ -236,7 +236,7 @@
    <addaction name="menuFile"/>
    <addaction name="menuEmulator"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen_ROM">
    <property name="text">
     <string>Open ROM</string>
