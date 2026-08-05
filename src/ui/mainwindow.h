@@ -9,6 +9,7 @@
 #include "chip8.h"
 #include "inputmap.h"
 #include "memorywindow.h"
+#include "aboutdialog.h"
 
 enum class emulatorState {
     Stopped, //No ROM running

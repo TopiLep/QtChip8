@@ -20,13 +20,45 @@ qt_add_executable(Chip8Emulator
     src/ui/displaywidget.h src/ui/displaywidget.cpp
     src/ui/inputmap.h src/ui/inputmap.cpp
     src/ui/memorywindow.h src/ui/memorywindow.cpp src/ui/memorywindow.ui
+    src/ui/aboutdialog.h src/ui/aboutdialog.cpp src/ui/aboutdialog.ui
+
+
+
 )
 
+#resources
 qt_add_resources(Chip8Emulator "sounds"
     PREFIX "/"
     FILES
-        sounds/beep.wav
+        assets/sounds/beep.wav
 )
+
+qt_add_resources(Chip8Emulator "images"
+    PREFIX "/"
+    FILES
+        assets/images/Chip8EmulatorLogo.png
+)
+
+# Get version string from git
+find_package(Git QUIET)
+if(GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} describe --tags --dirty --always
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+endif()
+
+if(NOT GIT_VERSION)
+    set(GIT_VERSION "unknown")
+endif()
+
+message(STATUS "Building version: ${GIT_VERSION}")
+
+target_compile_definitions(Chip8Emulator PRIVATE APP_VERSION="${GIT_VERSION}")
+
 
 target_include_directories(Chip8Emulator
     PRIVATE

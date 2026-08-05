@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->displaywidget->setFocusPolicy(Qt::StrongFocus);
 
     //initialize beeper
-    m_beep.setSource(QUrl("qrc:/sounds/beep.wav"));
+    m_beep.setSource(QUrl("qrc:/assets/sounds/beep.wav"));
     m_beep.setLoopCount(QSoundEffect::Infinite);
     m_beep.setVolume(0.1f);
 
@@ -74,6 +74,12 @@ MainWindow::MainWindow(QWidget *parent)
         m_chip.unloadROM();
         m_state = emulatorState::Stopped;
         statusBar()->showMessage("Rom unloaded", 3000);
+    });
+
+    //help menu
+    QObject::connect(ui->actionAbout, &QAction::triggered, this, [this]() {
+        aboutDialog dialog(this);
+        dialog.exec();
     });
 
     //start timer
