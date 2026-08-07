@@ -21,6 +21,16 @@ public:
 
 private:
     Ui::MemoryWindow *ui;
+
+    //flags
+    bool m_highlightPC = true;
+    bool m_highlightIndex = true;
+
+    bool m_readOnly = true;
+
+signals:
+    void memoryEditRequest(int address, uint8_t value);
+
 };
 
 #endif

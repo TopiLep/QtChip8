@@ -32,6 +32,9 @@ public:
     uint16_t getPC() const;
     uint16_t getI() const;
 
+    //memory
+    void writeMemory(int address, uint8_t value);
+
 private:
     //Display
     uint8_t display[32][64]{}; //64x32 display of

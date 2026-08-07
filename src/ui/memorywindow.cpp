@@ -7,6 +7,8 @@ MemoryWindow::MemoryWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //SETUP MEMORY DISPLAY
+
     //read only
     ui->MemoryTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
@@ -40,6 +42,41 @@ MemoryWindow::MemoryWindow(QWidget *parent)
             ui->MemoryTable->setItem(row, col, new QTableWidgetItem);
         }
     }
+
+
+    //Connections
+
+    QObject::connect(ui->PcCheckBox, &QCheckBox::checkStateChanged, this, [this](Qt::CheckState state) {
+        m_highlightPC = (state == Qt::Checked);
+    });
+
+    QObject::connect(ui->IndexCheckBox, &QCheckBox::checkStateChanged, this, [this](Qt::CheckState state) {
+        m_highlightIndex = (state == Qt::Checked);
+    });
+
+    QObject::connect(ui->readOnlyCheckBox, &QCheckBox::checkStateChanged, this, [this](Qt::CheckState state) {
+        m_readOnly = (state == Qt::Checked);
+
+        if(m_readOnly)
+            ui->MemoryTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        else
+            ui->MemoryTable->setEditTriggers(QAbstractItemView::DoubleClicked);
+
+    });
+
+
+    connect(ui->MemoryTable, &QTableWidget::itemChanged, this, [this](QTableWidgetItem *item) {
+        int row = item->row();
+        int col = item->column();
+        int address = row * 16 + col;
+
+        bool ok;
+        uint8_t value = item->text().toUInt(&ok, 16);
+        if (!ok) return;
+
+        emit memoryEditRequest(address, value);
+    });
+
 }
 
 MemoryWindow::~MemoryWindow()
@@ -68,13 +105,17 @@ void MemoryWindow::setMemory(const uint8_t *memory, uint16_t pc, uint16_t I)
 
     //nullptr checks before coloring, craches without it.
     //highlight pc
-    QTableWidgetItem *pcItem = ui->MemoryTable->item(pc / 16, pc % 16);
-    if (pcItem)
-        pcItem->setBackground(Qt::green);
+    if (m_highlightPC) {
+        QTableWidgetItem *pcItem = ui->MemoryTable->item(pc / 16, pc % 16);
+        if (pcItem)
+            pcItem->setBackground(Qt::green);
+    }
 
     //highlight I
-    QTableWidgetItem *iItem = ui->MemoryTable->item(I / 16, I % 16);
-    if (iItem)
-        iItem->setBackground(Qt::blue);
+    if (m_highlightIndex) {
+        QTableWidgetItem *iItem = ui->MemoryTable->item(I / 16, I % 16);
+        if (iItem)
+            iItem->setBackground(Qt::blue);
+    }
 
 }

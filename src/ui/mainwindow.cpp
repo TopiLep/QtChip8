@@ -73,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->actionUnload_ROM, &QAction::triggered, this, [this]() {
         m_chip.unloadROM();
         m_state = emulatorState::Stopped;
+
         statusBar()->showMessage("Rom unloaded", 3000);
     });
 
@@ -162,8 +163,13 @@ void MainWindow::cycleChip(int times)
 
 void MainWindow::showMemoryWindow()
 {
-    if (!m_memoryWindow)
+    if (!m_memoryWindow) {
         m_memoryWindow = new MemoryWindow(this);
+
+        connect(m_memoryWindow, &MemoryWindow::memoryEditRequest, this, [this](int address, uint8_t value) {
+            m_chip.writeMemory(address, value);
+        });
+    }
 
     m_memoryWindow->show();
     m_memoryWindow->raise();

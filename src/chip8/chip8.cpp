@@ -291,6 +291,11 @@ uint16_t chip8::getI() const
     return I;
 }
 
+void chip8::writeMemory(int address, uint8_t value)
+{
+    memory[address] = value;
+}
+
 void chip8::op_00E0()
 {
     for (int y = 0; y < 32; y++)
