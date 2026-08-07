@@ -29,6 +29,7 @@ Featuring emulation, audio support, an integrated live memory viewer, emulator c
 - CHIP-8 emulation
 - Qt6 Widgets desktop interface
 - Live memory viewer
+- Live memory editing
 - Program Counter (PC) and Index Register (I) highlighting in memory viewer
 - Play, Pause, Step, and Reset controls
 - Adjustable execution speed (0.125×–4×)
