@@ -86,10 +86,22 @@ MemoryWindow::~MemoryWindow()
 
 void MemoryWindow::setMemory(const uint8_t *memory, uint16_t pc, uint16_t I)
 {
+
+    int selectedRow = -1;
+    int selectedColumn = -1;
+
+    if (ui->MemoryTable->currentItem()) {
+        selectedRow = ui->MemoryTable->currentItem()->row();
+        selectedColumn = ui->MemoryTable->currentItem()->column();
+    }
+
     for (int address = 0; address < 4096; address++)
-    {
+    {    
         int row = address / 16;
         int column = address % 16;
+
+        if(selectedRow == row && selectedColumn == column)
+            continue;
 
         QString value =
             QString("%1")

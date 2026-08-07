@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0]
 
 ### Added
 - Help -> About dialog with logo, version, license link, and "About Qt" button
@@ -20,5 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  
 ### Fixed
 - Sound playback broken after asset folder restructure (stale `qrc:/beep.wav` path)
+- Memory update would overwrite while mid memory edit typing
 
 ---
