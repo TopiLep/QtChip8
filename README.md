@@ -59,7 +59,7 @@ cmake --build build
 
 ## Roadmap
 
-- [ ] Memory editing
+- [x] Memory editing
 - [ ] Mappable controls
 - [ ] Compatibility quirks toggle
 - [ ] Save/load state
