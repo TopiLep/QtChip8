@@ -214,3 +214,22 @@ void MainWindow::keyReleaseEvent(QKeyEvent *e) {
         return;
     }
 }
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    if (!event->mimeData()->hasUrls())
+        return;
+
+    openROM(event->mimeData()->urls().first().toLocalFile());
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (!event->mimeData()->hasUrls())
+        return;
+
+    const QUrl url = event->mimeData()->urls().first();
+
+    if (url.isLocalFile() && url.toLocalFile().endsWith(".ch8", Qt::CaseSensitive))
+        event->acceptProposedAction();
+}

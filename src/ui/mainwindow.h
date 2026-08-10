@@ -11,6 +11,11 @@
 #include "memorywindow.h"
 #include "aboutdialog.h"
 
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
+#include <QUrl>
+
 enum class emulatorState {
     Stopped, //No ROM running
     Running, //CPU executing instructions
@@ -65,5 +70,8 @@ private:
 protected:
     void keyPressEvent(QKeyEvent *e) override;
     void keyReleaseEvent(QKeyEvent *e) override;
+
+    void dropEvent(QDropEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
 };
 #endif // MAINWINDOW_H
