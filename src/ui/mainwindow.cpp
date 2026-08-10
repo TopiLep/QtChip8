@@ -194,6 +194,13 @@ void MainWindow::openROM(QString file)
             m_state = emulatorState::Running;
     } else {
         statusBar()->showMessage("Failed to load ROM", 30000);
+
+        QMessageBox::critical(
+            this,
+            "Error",
+            "Failed to open ROM:\n" + file
+            );
+        return;
     }
 }
 
