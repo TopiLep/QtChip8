@@ -72,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QObject::connect(ui->actionUnload_ROM, &QAction::triggered, this, [this]() {
         m_chip.unloadROM();
+        cycleChip(0);
         m_state = emulatorState::Stopped;
 
         statusBar()->showMessage("Rom unloaded", 3000);

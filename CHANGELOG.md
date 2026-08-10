@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - ROM file drag-and-drop support
+- Error dialog on rom loading when loading failed
 
 ### Changed
 
 ### Fixed
+- Rom unloading wouldn't clear display
 
 ## [0.2.0]
 
