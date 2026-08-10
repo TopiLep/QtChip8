@@ -63,4 +63,4 @@ cmake --build build
 - [x] Memory editing
 - [ ] Mappable controls
 - [ ] Compatibility quirks toggle
-- [ ] Save/load state
+- [x] Save/load state

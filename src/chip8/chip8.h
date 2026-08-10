@@ -35,6 +35,10 @@ public:
     //memory
     void writeMemory(int address, uint8_t value);
 
+    //save state
+    bool saveState(const std::filesystem::path& path);
+    bool loadState(const std::filesystem::path& path);
+
 private:
     //Display
     uint8_t display[32][64]{}; //64x32 display of

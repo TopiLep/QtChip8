@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - ROM file drag-and-drop support
 - Error dialog on rom loading when loading failed
+- Save/load emulator state ('.c8sav' files) via Emulator -> Save state/ Load state
+    - Saves PC, I, SP, V registers, stack, timers, memory and display buffer
 
 ### Changed
 

@@ -296,6 +296,66 @@ void chip8::writeMemory(int address, uint8_t value)
     memory[address] = value;
 }
 
+bool chip8::saveState(const std::filesystem::path &path)
+{
+    std::ofstream file(path, std::ios::binary);
+    if(!file) {
+        return false;
+    }
+
+    uint32_t magic = 0x43385354; // 'C8ST'
+
+    //write the state
+    file.write(reinterpret_cast<const char*>(&magic), sizeof(magic));
+    file.write(reinterpret_cast<const char*>(&pc), sizeof(pc));
+    file.write(reinterpret_cast<const char*>(&I), sizeof(I));
+    file.write(reinterpret_cast<const char*>(&sp), sizeof(sp));
+    file.write(reinterpret_cast<const char*>(V), sizeof(V));
+    file.write(reinterpret_cast<const char*>(stack), sizeof(stack));
+    file.write(reinterpret_cast<const char*>(&delayTimer), sizeof(delayTimer));
+    file.write(reinterpret_cast<const char*>(&soundTimer), sizeof(soundTimer));
+    file.write(reinterpret_cast<const char*>(memory), sizeof(memory));
+    file.write(reinterpret_cast<const char*>(display), sizeof(display));
+
+    file.close();
+    return file.good();
+}
+
+bool chip8::loadState(const std::filesystem::path &path)
+{
+    std::ifstream file(path, std::ios::binary);
+    if(!file) {
+        return false;
+    }
+
+    uint32_t magic;
+
+    file.read(reinterpret_cast<char*>(&magic), sizeof(magic));
+
+    if(magic != 0x43385354) {
+        return false;
+    }
+
+    file.read(reinterpret_cast<char*>(&pc), sizeof(pc));
+    file.read(reinterpret_cast<char*>(&I), sizeof(I));
+    file.read(reinterpret_cast<char*>(&sp), sizeof(sp));
+    file.read(reinterpret_cast<char*>(V), sizeof(V));
+    file.read(reinterpret_cast<char*>(stack), sizeof(stack));
+    file.read(reinterpret_cast<char*>(&delayTimer), sizeof(delayTimer));
+    file.read(reinterpret_cast<char*>(&soundTimer), sizeof(soundTimer));
+    file.read(reinterpret_cast<char*>(memory), sizeof(memory));
+    file.read(reinterpret_cast<char*>(display), sizeof(display));
+
+    file.close();
+    if(file.good()) {
+        return true;
+    } else {
+        resetEmulatorState();
+        return false;
+    }
+
+}
+
 void chip8::op_00E0()
 {
     for (int y = 0; y < 32; y++)

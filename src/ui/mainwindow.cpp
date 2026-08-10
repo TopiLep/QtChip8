@@ -78,6 +78,48 @@ MainWindow::MainWindow(QWidget *parent)
         statusBar()->showMessage("Rom unloaded", 3000);
     });
 
+    QObject::connect(ui->actionSave_state, &QAction::triggered, this, [this]() {
+        emulatorState state = m_state;
+        m_state = emulatorState::Paused;
+        QString path = QFileDialog::getSaveFileName(this, tr("Save State"), QString(), tr("Chip-8 save state (*.c8sav)"));
+
+        if (path.isEmpty()) {
+            m_state = state;
+            return;
+        }
+
+        if (!m_chip.saveState(path.toStdString())) {
+            QMessageBox::critical(
+                this,
+                "Error",
+                "Failed to save state:\n" + path
+                );
+        }
+
+        m_state = state;
+    });
+
+    QObject::connect(ui->actionLoad_state, &QAction::triggered, this, [this]() {
+        emulatorState state = m_state;
+        m_state = emulatorState::Paused;
+        QString path = QFileDialog::getOpenFileName(this, tr("Load State"), QString(), tr("Chip-8 Save state (*.c8sav)"));
+
+        if (path.isEmpty()) {
+            m_state = state;
+            return;
+        }
+
+        if (!m_chip.loadState(path.toStdString())) {
+            QMessageBox::critical(
+                this,
+                "Error",
+                "Failed to load state:\n" + path
+                );
+        }
+
+        m_state = state;
+    });
+
     //help menu
     QObject::connect(ui->actionAbout, &QAction::triggered, this, [this]() {
         aboutDialog dialog(this);
