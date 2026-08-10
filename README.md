@@ -4,7 +4,7 @@
 
 A CHIP-8 emulator written in **C++17** using **Qt6 Widgets**.
 
-Featuring emulation, audio support, an integrated live memory viewer, emulator controls, and debugging tools.
+Featuring emulation, save states, an integrated live memory viewer, emulator controls, and debugging tools.
 
 <p> <img src="https://img.shields.io/badge/C%2B%2B-17-blue?logo=c%2B%2B"> <img src="https://img.shields.io/badge/CMake-3.19+-064F8C?logo=cmake"> <img src="https://img.shields.io/badge/Qt-6-green?logo=qt"> <img src="https://img.shields.io/badge/License-MIT-green">  </p>
 
@@ -30,6 +30,7 @@ Featuring emulation, audio support, an integrated live memory viewer, emulator c
 - Qt6 Widgets desktop interface
 - Live memory viewer
 - Live memory editing
+- Save/Load game state
 - Program Counter (PC) and Index Register (I) highlighting in memory viewer
 - Play, Pause, Step, and Reset controls
 - Adjustable execution speed (0.125×–4×)
