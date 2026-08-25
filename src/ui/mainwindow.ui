@@ -235,6 +235,8 @@
     <addaction name="separator"/>
     <addaction name="actionSave_state"/>
     <addaction name="actionLoad_state"/>
+    <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -285,6 +287,11 @@
   <action name="actionLoad_state">
    <property name="text">
     <string>Load state</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
    </property>
   </action>
  </widget>

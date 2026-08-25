@@ -3,6 +3,8 @@
 
 #include <array>
 #include <Qt>
+#include <QString>
+#include <QSettings>
 
 //keep chip-8 input actions first 16 .
 enum class Action {
@@ -22,12 +24,46 @@ class InputMap
 public:
     InputMap();
 
+    ~InputMap();
+
     void bind(Action a, int qtKey);
+    int getBinding(Action a) const;
+
     Action actionForKey(int qtKey) const;
+    QString actionName(Action a);
+
+    bool isModified() const;
+
+    QSettings m_settings = QSettings("io.github.topilep", "Chip8Emulator");
+
+    void save();
+    void load();
+    void setDefaults();
+
 
 private:
-    void setDefaults();
+
     std::array<int, (size_t)Action::Count> bindings{};
+
+    static constexpr std::array<int, (size_t)Action::Count> defaultBindings{
+        Qt::Key_X,
+        Qt::Key_1,
+        Qt::Key_2,
+        Qt::Key_3,
+        Qt::Key_Q,
+        Qt::Key_W,
+        Qt::Key_E,
+        Qt::Key_A,
+        Qt::Key_S,
+        Qt::Key_D,
+        Qt::Key_Z,
+        Qt::Key_C,
+        Qt::Key_4,
+        Qt::Key_R,
+        Qt::Key_F,
+        Qt::Key_V,
+        Qt::Key_Space
+    };
 
 };
 

@@ -10,6 +10,7 @@
 #include "inputmap.h"
 #include "memorywindow.h"
 #include "aboutdialog.h"
+#include "preferenceswindow.h"
 
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -55,6 +56,10 @@ private:
     //memory window
     void showMemoryWindow();
     MemoryWindow *m_memoryWindow = nullptr;
+
+    //Preferences window
+    void showPreferencesWindow();
+    PreferencesWindow *m_preferencesWindow = nullptr;
 
     //cycles
     int m_cyclesPerTick = 12;
