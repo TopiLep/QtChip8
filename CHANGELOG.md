@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Error dialog on rom loading when loading failed
 - Save/load emulator state ('.c8sav' files) via Emulator -> Save state/ Load state
     - Saves PC, I, SP, V registers, stack, timers, memory and display buffer
+- Preferences window with category list (Controls, Display, Emulation, Audio)
+- Remappable controls via Preferences -> Controls
+    - Click a keybind button to capture and rebind any action to a new key
+    - "Reset to Default" button appears when bindings differ from defaults
+    - Save and load keybinds from QSettings 
+- Added a color picker button with a color selection dialog for display colors.
 
 ### Changed
 

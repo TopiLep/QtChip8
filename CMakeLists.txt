@@ -21,6 +21,9 @@ qt_add_executable(Chip8Emulator
     src/ui/inputmap.h src/ui/inputmap.cpp
     src/ui/memorywindow.h src/ui/memorywindow.cpp src/ui/memorywindow.ui
     src/ui/aboutdialog.h src/ui/aboutdialog.cpp src/ui/aboutdialog.ui
+    src/ui/preferenceswindow.h src/ui/preferenceswindow.cpp src/ui/preferenceswindow.ui
+    src/ui/keybindbutton.h src/ui/keybindbutton.cpp
+    src/ui/colorpickerbutton.h src/ui/colorpickerbutton.cpp
 
 
 

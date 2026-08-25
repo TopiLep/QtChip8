@@ -70,6 +70,8 @@ MainWindow::MainWindow(QWidget *parent)
     //emulator menu
     QObject::connect(ui->actionMemory, &QAction::triggered, this, &MainWindow::showMemoryWindow);
 
+    QObject::connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::showPreferencesWindow);
+
     QObject::connect(ui->actionUnload_ROM, &QAction::triggered, this, [this]() {
         m_chip.unloadROM();
         cycleChip(0);
@@ -218,6 +220,18 @@ void MainWindow::showMemoryWindow()
     m_memoryWindow->raise();
     m_memoryWindow->activateWindow();
     m_memoryWindow->setMemory(m_chip.getMemory(), m_chip.getPC(), m_chip.getI());
+}
+
+void MainWindow::showPreferencesWindow()
+{
+    if (!m_preferencesWindow) {
+        m_preferencesWindow = new PreferencesWindow(&m_inputMap, this);
+    }
+
+    m_preferencesWindow->show();
+    m_preferencesWindow->raise();
+    m_preferencesWindow->activateWindow();
+    m_preferencesWindow->setModal(false);
 }
 
 QString MainWindow::openROMPrompt()
