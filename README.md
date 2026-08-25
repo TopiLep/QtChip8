@@ -6,7 +6,10 @@ A CHIP-8 emulator written in **C++17** using **Qt6 Widgets**.
 
 Featuring emulation, save states, an integrated live memory viewer, emulator controls, and debugging tools.
 
+
 <p> <img src="https://img.shields.io/badge/C%2B%2B-17-blue?logo=c%2B%2B"> <img src="https://img.shields.io/badge/CMake-3.19+-064F8C?logo=cmake"> <img src="https://img.shields.io/badge/Qt-6-green?logo=qt"> <img src="https://img.shields.io/badge/License-MIT-green">  </p>
+
+**This project has reached end of development.**
 
 </div>
 
