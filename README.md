@@ -65,6 +65,6 @@ cmake --build build
 ## Roadmap
 
 - [x] Memory editing
-- [ ] Mappable controls
+- [x] Mappable controls
 - [ ] Compatibility quirks toggle
 - [x] Save/load state
