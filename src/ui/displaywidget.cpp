@@ -8,7 +8,7 @@ DisplayWidget::DisplayWidget(QWidget *parent)
     m_image.setColor(0, qRgb(0, 0, 0));
     m_image.setColor(1, qRgb(255, 255, 255));
     m_image.fill(0);
-    setFixedSize(640, 320); // 64*10, 32*10
+    //setFixedSize(640, 320); // 64*10, 32*10
 }
 
 void DisplayWidget::setChip8(chip8 *chip)
@@ -28,8 +28,21 @@ void DisplayWidget::updateFrameBuffer()
 
 void DisplayWidget::paintEvent(QPaintEvent *event)
 {
-    QPainter painter(this);
+    Q_UNUSED(event);
 
+    QPainter painter(this);
     painter.setRenderHint(QPainter::SmoothPixmapTransform, false);
-    painter.drawImage(rect(), m_image);
+
+    int scale = qMin(width() / 64, height() / 32);
+
+    if (scale < 1)
+        scale = 1;
+
+    QSize displaySize(64 * scale, 32 * scale);
+
+    QRect targetRect(QPoint(0, 0), displaySize);
+    targetRect.moveCenter(rect().center());
+
+    painter.fillRect(rect(), Qt::black);
+    painter.drawImage(targetRect, m_image);
 }
