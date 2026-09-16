@@ -62,6 +62,7 @@ private:
 
     //keypad
     uint8_t keypad[16]{};
+    int waitKey = -1; //key seen going down during FX0A, -1 while none
 
     bool stall = false;
 

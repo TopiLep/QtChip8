@@ -264,6 +264,7 @@ void chip8::resetEmulatorState()
     memset(stack, 0, sizeof(stack));
     memset(display, 0, sizeof(display));
     memset(keypad, 0, sizeof(keypad));
+    waitKey = -1;
     delayTimer = 0;
     soundTimer = 0;
 
@@ -444,13 +445,9 @@ void chip8::op_8XY3(uint8_t x, uint8_t y)
 void chip8::op_8XY4(uint8_t x, uint8_t y)
 {
     uint16_t combination = V[x] + V[y];
-    if (combination > 255) {
-        V[15] = 1;
-    }
-    else {
-        V[15] = 0;
-    }
     V[x] = combination;
+    //the flag goes in last so it survives when x is 15
+    V[15] = (combination > 255) ? 1 : 0;
 }
 
 void chip8::op_8XY5(uint8_t x, uint8_t y)
@@ -462,8 +459,9 @@ void chip8::op_8XY5(uint8_t x, uint8_t y)
 
 void chip8::op_8XY6(uint8_t x)
 {
-    V[15] = (V[x] & 0x1);
+    uint8_t flag = (V[x] & 0x1);
     V[x] >>= 1;
+    V[15] = flag;
 }
 
 void chip8::op_8XY7(uint8_t x, uint8_t y)
@@ -475,8 +473,9 @@ void chip8::op_8XY7(uint8_t x, uint8_t y)
 
 void chip8::op_8XYE(uint8_t x)
 {
-    V[15] = (V[x] & 0x80) >> 7;
+    uint8_t flag = (V[x] & 0x80) >> 7;
     V[x] <<= 1;
+    V[15] = flag;
 }
 
 void chip8::op_9XY0(uint8_t x, uint8_t y)
@@ -523,14 +522,15 @@ void chip8::op_DXYN(uint8_t x, uint8_t y, uint8_t n)
 
 void chip8::op_EX9E(uint8_t x)
 {
-    if (keypad[V[x]] == 1) {
+    //only the low nibble names a key; anything more would read past keypad
+    if (keypad[V[x] & 0xF] == 1) {
         pc += 2;
     }
 }
 
 void chip8::op_EXA1(uint8_t x)
 {
-    if (keypad[V[x]] != 1) {
+    if (keypad[V[x] & 0xF] != 1) {
         pc += 2;
     }
 }
@@ -542,11 +542,18 @@ void chip8::op_FX07(uint8_t x)
 
 void chip8::op_FX0A(uint8_t x)
 {
-    for (int i = 0; i < 16; i++) {
-        if (keypad[i] == 1) {
-            V[x] = i;
-            return;
+    //the original hardware moves on when the key is released, not when it goes down
+    if (waitKey < 0) {
+        for (int i = 0; i < 16; i++) {
+            if (keypad[i] == 1) {
+                waitKey = i;
+                break;
+            }
         }
+    } else if (keypad[waitKey] != 1) {
+        V[x] = waitKey;
+        waitKey = -1;
+        return;
     }
     pc -= 2;
 }
