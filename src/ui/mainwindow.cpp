@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "QFileDialog"
+#include <QSignalBlocker>
+#include <QApplication>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -8,6 +10,16 @@ MainWindow::MainWindow(QWidget *parent)
     , m_cycleTimer(new QTimer(this))
 {
     ui->setupUi(this);
+    QSettings settings;
+    const int compatibility = settings.value("emulation/compatibility", 0).toInt();
+    if (compatibility >= 0 && compatibility <= 2)
+        m_chip.setCompatibility(static_cast<chip8::Compatibility>(compatibility));
+    connect(qApp, &QApplication::focusChanged, this, [this](QWidget*, QWidget*) {
+        m_chip.releaseKeys();
+    });
+    connect(qApp, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
+        if (state != Qt::ApplicationActive) m_chip.releaseKeys();
+    });
 
     //load recent roms into the menu
     loadRecentRoms();
@@ -117,6 +129,12 @@ MainWindow::MainWindow(QWidget *parent)
                 "Error",
                 "Failed to load state:\n" + path
                 );
+        } else {
+            ui->displaywidget->updateFrameBuffer();
+            m_chip.setDisplayDirty(false);
+            if (m_memoryWindow && m_memoryWindow->isVisible()) {
+                m_memoryWindow->setMemory(m_chip.getMemory(), m_chip.getPC(), m_chip.getI());
+            }
         }
 
         m_state = state;
@@ -185,9 +203,19 @@ void MainWindow::rebuildRecentMenu()
 
 void MainWindow::cycleChip(int times)
 {
-    for (int i = 0; i < times; ++i)
+    for (int i = 0; i < times && !m_chip.isHalted(); ++i)
         m_chip.cycle();
 
+    if (m_chip.isHalted()) {
+        m_state = emulatorState::Paused;
+        const QSignalBlocker blocker(ui->PlayButton);
+        ui->PlayButton->setChecked(true);
+        ui->PlayButton->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::MediaPlaybackPause));
+        ui->StepButton->setEnabled(true);
+        statusBar()->showMessage(tr("Emulation stopped at 0x%1: %2")
+            .arg(m_chip.getPC(), 3, 16, QLatin1Char('0'))
+            .arg(QString::fromUtf8(m_chip.getError())));
+    }
     m_chip.cycleTimers();
 
     if(m_chip.isDisplayDirty()) {
@@ -225,7 +253,7 @@ void MainWindow::showMemoryWindow()
 void MainWindow::showPreferencesWindow()
 {
     if (!m_preferencesWindow) {
-        m_preferencesWindow = new PreferencesWindow(&m_inputMap, this);
+        m_preferencesWindow = new PreferencesWindow(&m_inputMap, &m_chip, this);
     }
 
     m_preferencesWindow->show();
@@ -244,7 +272,8 @@ QString MainWindow::openROMPrompt()
 }
 
 void MainWindow::openROM(QString file)
-{   
+{
+    if (file.isEmpty()) return;
     if (m_chip.loadROM(file.toStdString())) {
         addRecentRom(file);
         if (m_state == emulatorState::Stopped)
@@ -262,15 +291,22 @@ void MainWindow::openROM(QString file)
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e) {
+    if (e->isAutoRepeat()) return;
     Action a = m_inputMap.actionForKey(e->key());
 
     if (a >= Action::Chip8_0 && a <= Action::Chip8_F) {
         m_chip.keyPress((uint8_t)a);
         return;
     }
+    if (a == Action::Pause) {
+        ui->PlayButton->click();
+        return;
+    }
+    QMainWindow::keyPressEvent(e);
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *e) {
+    if (e->isAutoRepeat()) return;
     Action a = m_inputMap.actionForKey(e->key());
 
     if (a >= Action::Chip8_0 && a <= Action::Chip8_F) {

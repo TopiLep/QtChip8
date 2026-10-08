@@ -1,10 +1,13 @@
 #include "preferenceswindow.h"
 #include "ui_preferenceswindow.h"
+#include <QSettings>
+#include <QLabel>
 
-PreferencesWindow::PreferencesWindow(InputMap *inputMap, QWidget *parent)
+PreferencesWindow::PreferencesWindow(InputMap *inputMap, chip8 *emulator, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::PreferencesWindow)
     , m_inputMap(inputMap)
+    , m_emulator(emulator)
 {
     ui->setupUi(this);
 
@@ -28,6 +31,7 @@ PreferencesWindow::PreferencesWindow(InputMap *inputMap, QWidget *parent)
 
     //init display page
     initializeDisplayPage();
+    initializeEmulationPage();
 
 }
 
@@ -39,6 +43,7 @@ PreferencesWindow::~PreferencesWindow()
 void PreferencesWindow::onCategoryChanged(int index)
 {
     ui->stackedWidget->setCurrentIndex(index);
+    updateResetButton();
 
     switch (index) {
     case 0:
@@ -96,12 +101,10 @@ bool PreferencesWindow::currentPageIsModified()
     case 0:
         return m_inputMap->isModified();
 
-    case 1:
-
-
     case 2:
+        return m_emulator->getCompatibility() != chip8::Compatibility::Legacy;
 
-
+    case 1:
     case 3:
 
 
@@ -122,6 +125,7 @@ void PreferencesWindow::resetCurrentPage()
         break;
 
     case 2:
+        m_compatibility->setCurrentIndex(0);
         break;
 
     case 3:
@@ -157,4 +161,33 @@ void PreferencesWindow::initializeDisplayPage()
 
     layout->addRow("Primary Color:", m_backgroundColorButton);
     layout->addRow("Secondary Color:", m_foregroundColorButton);
+}
+
+void PreferencesWindow::initializeEmulationPage()
+{
+    auto* layout = new QVBoxLayout(ui->EmulationPage);
+    auto* title = new QLabel(tr("Compatibility"), ui->EmulationPage);
+    m_compatibility = new QComboBox(ui->EmulationPage);
+    m_compatibility->setObjectName("compatibilityMode");
+    m_compatibility->addItem(tr("QtChip8 (default)"));
+    m_compatibility->addItem(tr("Original CHIP-8 instruction behavior"));
+    m_compatibility->addItem(tr("CHIP-48 instruction behavior"));
+    m_compatibility->setCurrentIndex(static_cast<int>(m_emulator->getCompatibility()));
+    auto* description = new QLabel(tr(
+        "Choose a mode if a game's graphics or movement behave incorrectly. "
+        "This changes shifts, register transfers, jumps, sprite edges and logic flags. "
+        "Changes apply immediately; reload the ROM for a fresh start. "
+        "Use the same mode when restoring a saved game. "
+        "Extended SUPER-CHIP instructions are not supported."), ui->EmulationPage);
+    description->setWordWrap(true);
+    layout->addWidget(title);
+    layout->addWidget(m_compatibility);
+    layout->addWidget(description);
+    layout->addStretch();
+    connect(m_compatibility, &QComboBox::currentIndexChanged, this, [this](int index) {
+        m_emulator->setCompatibility(static_cast<chip8::Compatibility>(index));
+        QSettings settings;
+        settings.setValue("emulation/compatibility", index);
+        updateResetButton();
+    });
 }
