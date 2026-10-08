@@ -5,8 +5,30 @@ chip8::chip8()
 
 }
 
+void chip8::halt(const char* reason)
+{
+    error = reason;
+    soundTimer = 0;
+}
+
+bool chip8::checkMemory(uint16_t address, unsigned int count)
+{
+    if (static_cast<unsigned int>(address) + count > sizeof(memory)) {
+        halt("Memory access outside 4 KB RAM");
+        return false;
+    }
+    return true;
+}
+
+void chip8::releaseKeys()
+{
+    memset(keypad, 0, sizeof(keypad));
+}
+
 void chip8::cycle()
 {
+    if (isHalted() || !checkMemory(pc, 2)) return;
+    const uint16_t instructionAddress = pc;
     uint16_t opcode = memory[pc];
     opcode = (opcode << 8);
     opcode |= memory[pc + 1];
@@ -38,13 +60,13 @@ void chip8::cycle()
     switch (nib1)
     {
     case 0x0:
-        switch (kk)
+        switch (opcode)
         {
-        case 0xE0:
+        case 0x00E0:
             op_00E0();
             break;
 
-        case 0xEE:
+        case 0x00EE:
             op_00EE();
             break;
 
@@ -71,7 +93,7 @@ void chip8::cycle()
         break;
 
     case 0x5:
-        op_5XY0(x, y);
+        if (n == 0) op_5XY0(x, y);
         break;
 
     case 0x6:
@@ -91,9 +113,9 @@ void chip8::cycle()
         case 0x3: op_8XY3(x, y); break;
         case 0x4: op_8XY4(x, y); break;
         case 0x5: op_8XY5(x, y); break;
-        case 0x6: op_8XY6(x); break;
+        case 0x6: op_8XY6(x, y); break;
         case 0x7: op_8XY7(x, y); break;
-        case 0xE: op_8XYE(x);    break;
+        case 0xE: op_8XYE(x, y);    break;
 
         default:
             // Unknown 0x8 instruction
@@ -102,7 +124,7 @@ void chip8::cycle()
         break;
 
     case 0x9:
-        op_9XY0(x, y);
+        if (n == 0) op_9XY0(x, y);
         break;
 
     case 0xA:
@@ -161,10 +183,12 @@ void chip8::cycle()
         // Unknown opcode
         break;
     }
+    if (isHalted()) pc = instructionAddress;
 }
 
 void chip8::cycleTimers()
 {
+    if (isHalted()) return;
     if (soundTimer > 0)
         --soundTimer;
     if (delayTimer > 0)
@@ -262,6 +286,7 @@ void chip8::keyRelease(uint8_t key)
 
 void chip8::resetEmulatorState()
 {
+    error = nullptr;
     pc = 0x200;
     sp = 0;
     I = 0;
@@ -298,7 +323,8 @@ uint16_t chip8::getI() const
 
 void chip8::writeMemory(int address, uint8_t value)
 {
-    memory[address] = value;
+    if (address >= 0 && address < static_cast<int>(sizeof(memory)))
+        memory[address] = value;
 }
 
 bool chip8::saveState(const std::filesystem::path &path)
@@ -369,6 +395,7 @@ bool chip8::loadState(const std::filesystem::path &path)
     }
 
     // Key presses belong to the current input session, not the saved game.
+    loaded.compatibility = compatibility;
     loaded.displayDirty = true;
     *this = loaded;
     return true;
@@ -389,10 +416,11 @@ void chip8::op_00E0()
 
 void chip8::op_00EE()
 {
-    if (sp > 0) {
-        sp--;
-        pc = stack[sp];
+    if (sp == 0) {
+        halt("Return with an empty stack");
+        return;
     }
+    pc = stack[--sp];
 }
 
 void chip8::op_1NNN(uint16_t nnn)
@@ -402,10 +430,11 @@ void chip8::op_1NNN(uint16_t nnn)
 
 void chip8::op_2NNN(uint16_t nnn)
 {
-    if (sp < 16) {
-        stack[sp] = pc;
-        sp++;
+    if (sp >= 16) {
+        halt("Call stack overflow");
+        return;
     }
+    stack[sp++] = pc;
     pc = nnn;
 }
 
@@ -448,28 +477,27 @@ void chip8::op_8XY0(uint8_t x, uint8_t y)
 void chip8::op_8XY1(uint8_t x, uint8_t y)
 {
     V[x] = (V[x] | V[y]);
+    if (compatibility == Compatibility::Original) V[15] = 0;
 }
 
 void chip8::op_8XY2(uint8_t x, uint8_t y)
 {
     V[x] = (V[x] & V[y]);
+    if (compatibility == Compatibility::Original) V[15] = 0;
 }
 
 void chip8::op_8XY3(uint8_t x, uint8_t y)
 {
     V[x] = (V[x] ^ V[y]);
+    if (compatibility == Compatibility::Original) V[15] = 0;
 }
 
 void chip8::op_8XY4(uint8_t x, uint8_t y)
 {
-    uint16_t combination = V[x] + V[y];
-    if (combination > 255) {
-        V[15] = 1;
-    }
-    else {
-        V[15] = 0;
-    }
-    V[x] = combination;
+    const uint16_t combination = V[x] + V[y];
+    V[x] = static_cast<uint8_t>(combination);
+    V[15] = combination > 255;
+
 }
 
 void chip8::op_8XY5(uint8_t x, uint8_t y)
@@ -479,10 +507,11 @@ void chip8::op_8XY5(uint8_t x, uint8_t y)
     V[15] = flag;
 }
 
-void chip8::op_8XY6(uint8_t x)
+void chip8::op_8XY6(uint8_t x, uint8_t y)
 {
-    V[15] = (V[x] & 0x1);
-    V[x] >>= 1;
+    const uint8_t value = V[compatibility == Compatibility::Original ? y : x];
+    V[x] = value >> 1;
+    V[15] = value & 1;
 }
 
 void chip8::op_8XY7(uint8_t x, uint8_t y)
@@ -492,10 +521,11 @@ void chip8::op_8XY7(uint8_t x, uint8_t y)
     V[15] = flag;
 }
 
-void chip8::op_8XYE(uint8_t x)
+void chip8::op_8XYE(uint8_t x, uint8_t y)
 {
-    V[15] = (V[x] & 0x80) >> 7;
-    V[x] <<= 1;
+    const uint8_t value = V[compatibility == Compatibility::Original ? y : x];
+    V[x] = value << 1;
+    V[15] = value >> 7;
 }
 
 void chip8::op_9XY0(uint8_t x, uint8_t y)
@@ -512,7 +542,8 @@ void chip8::op_ANNN(uint16_t nnn)
 
 void chip8::op_BNNN(uint16_t nnn)
 {
-    pc = nnn + V[0];
+    const uint8_t reg = compatibility == Compatibility::Chip48 ? (nnn >> 8) : 0;
+    pc = nnn + V[reg];
 }
 
 void chip8::op_CXKK(uint8_t x, uint8_t kk)
@@ -522,13 +553,18 @@ void chip8::op_CXKK(uint8_t x, uint8_t kk)
 
 void chip8::op_DXYN(uint8_t x, uint8_t y, uint8_t n)
 {
+    if (!checkMemory(I, n)) return;
+    const uint8_t startX = V[x] % 64;
+    const uint8_t startY = V[y] % 32;
     V[15] = 0;
     for (int Y = 0; Y < n; Y++) {
         uint8_t byte = memory[I + Y];
         for (int X = 0; X < 8; X++) {
             if ((byte & (0x80 >> X)) != 0) {
-                uint8_t displayX = (X + V[x]) % 64;
-                uint8_t displayY = (Y + V[y]) % 32;
+                if (compatibility != Compatibility::Legacy &&
+                    (X + startX >= 64 || Y + startY >= 32)) continue;
+                uint8_t displayX = (X + startX) % 64;
+                uint8_t displayY = (Y + startY) % 32;
                 if (display[displayY][displayX] == 1) {
                     V[15] = 1;
                 }
@@ -542,14 +578,14 @@ void chip8::op_DXYN(uint8_t x, uint8_t y, uint8_t n)
 
 void chip8::op_EX9E(uint8_t x)
 {
-    if (keypad[V[x]] == 1) {
+    if (V[x] < 16 && keypad[V[x]] == 1) {
         pc += 2;
     }
 }
 
 void chip8::op_EXA1(uint8_t x)
 {
-    if (keypad[V[x]] != 1) {
+    if (V[x] >= 16 || keypad[V[x]] != 1) {
         pc += 2;
     }
 }
@@ -592,6 +628,7 @@ void chip8::op_FX29(uint8_t x)
 
 void chip8::op_FX33(uint8_t x)
 {
+    if (!checkMemory(I, 3)) return;
     memory[I] = V[x] / 100;
     memory[I + 1] = V[x] % 100 / 10;
     memory[I + 2] = V[x] % 100 % 10;
@@ -599,14 +636,18 @@ void chip8::op_FX33(uint8_t x)
 
 void chip8::op_FX55(uint8_t x)
 {
+    if (!checkMemory(I, x + 1)) return;
     for (int i = 0; i <= x; i++) {
         memory[I + i] = V[i];
     }
+    if (compatibility == Compatibility::Original) I += x + 1;
 }
 
 void chip8::op_FX65(uint8_t x)
 {
+    if (!checkMemory(I, x + 1)) return;
     for (int i = 0; i <= x; i++) {
         V[i] = memory[I + i];
     }
+    if (compatibility == Compatibility::Original) I += x + 1;
 }

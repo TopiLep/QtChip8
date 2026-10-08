@@ -6,6 +6,8 @@
 #include <QFormLayout>
 
 #include "inputmap.h"
+#include "chip8.h"
+#include <QComboBox>
 #include "keybindbutton.h"
 #include "colorpickerbutton.h"
 
@@ -18,7 +20,7 @@ class PreferencesWindow : public QDialog
     Q_OBJECT
 
 public:
-    explicit PreferencesWindow(InputMap *inputMap, QWidget *parent = nullptr);
+    explicit PreferencesWindow(InputMap *inputMap, chip8 *emulator, QWidget *parent = nullptr);
     ~PreferencesWindow();
 
 private:
@@ -26,6 +28,9 @@ private:
     void onCategoryChanged(int index);
 
     InputMap *m_inputMap;
+    chip8 *m_emulator;
+    QComboBox *m_compatibility = nullptr;
+    void initializeEmulationPage();
     void populateKeybindTable();
 
     bool currentPageIsModified();

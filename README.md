@@ -39,6 +39,8 @@ Featuring emulation, save states, an integrated live memory viewer, emulator con
 - Adjustable execution speed (0.125×–4×)
 - Sound emulation
 - Recent ROMs menu
+- Persistent compatibility presets for instruction differences
+- Safe execution stops with diagnostics for invalid memory and stack operations
 
 ## Building
 
@@ -48,7 +50,7 @@ Featuring emulation, save states, an integrated live memory viewer, emulator con
 - CMake 3.19+
 
 ```bash
-git clone https://github.com/ligumas/QtChip8.git
+git clone https://github.com/TopiLep/QtChip8.git
 cd QtChip8
 
 cmake -B build
@@ -69,20 +71,48 @@ ctest --test-dir build-tests --output-on-failure
 
 Tests cover save-state round trips, truncated and invalid save files, ROM size
 limits, and preserving the current game when a load fails. GitHub Actions runs
-these tests with AddressSanitizer and UndefinedBehaviorSanitizer.
+these tests with AddressSanitizer and UndefinedBehaviorSanitizer. Execution tests
+cover compatibility presets, arithmetic flag/register aliases, sprite collisions,
+and memory/stack boundaries. A normal Qt build also includes an offscreen
+preferences integration test (preset selection, persistence, and reset).
 
 Save states keep the existing binary format (native byte order). Loading rejects
 incomplete files, trailing data, invalid execution addresses or stack depth,
 and invalid pixels. Successful loads refresh the display and release held keys.
 ROM files must contain 1–3584 bytes; failed loads leave the current game intact.
 
+## Compatibility and execution
+
+Open **Preferences → Emulation** to select an instruction preset. The selection
+is saved between launches and applies immediately. Reload the ROM after changing
+modes for a fresh start. Existing behavior remains the default.
+
+| Behavior | QtChip8 (default) | Original CHIP-8 | CHIP-48 |
+| --- | --- | --- | --- |
+| Shift source | Vx | Vy | Vx |
+| Increment I after Fx55/Fx65 | No | Yes | No |
+| Bnnn jump offset | V0 | V0 | Vx |
+| Sprite overflow at screen edges | Wrap | Clip | Clip |
+| Clear VF after OR/AND/XOR | No | Yes | No |
+
+These are instruction presets, not complete implementations of the historical
+machines. The instruction differences follow the
+[CHIP-8 implementation guide](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/).
+Legacy save files do not store the preset: select the same mode before restoring.
+
+Out-of-range memory operations and stack underflow/overflow halt execution,
+silence sound, and display the failing address and reason in the status bar.
+Reset or load another ROM/save to recover. Unrecognized instructions continue
+to be ignored. Keyboard auto-repeat is ignored, held keys are released when
+focus changes, and the configured Pause binding toggles playback.
+
 ## Known limitations
-- No configurable compatibility "quirks" (shift, load/store, jump behavior) yet — most ROMs run correctly, but a few may not match certain interpreters' exact behavior.
+- Compatibility presets cover instruction differences; cycle-accurate COSMAC VIP timing, display-wait and key-release quirks are not emulated.
 - SUPER-CHIP / XO-CHIP extended opcodes are not supported.
 
 ## Roadmap
 
 - [x] Memory editing
 - [x] Mappable controls
-- [ ] Compatibility quirks toggle
+- [x] Compatibility presets
 - [x] Save/load state

@@ -64,7 +64,9 @@ int main()
         emulator.unloadROM();
         emulator.setDisplayDirty(false);
         emulator.keyPress(3);
+        emulator.setCompatibility(chip8::Compatibility::Chip48);
         require(emulator.loadState(state), "Restore state");
+        require(emulator.getCompatibility() == chip8::Compatibility::Chip48, "Load preserves compatibility preference");
         require(emulator.isDisplayDirty(), "Restoring must invalidate display");
         require(emulator.getPC() == 0x208 && emulator.getI() == 0x50, "Restore registers");
         require(emulator.getSoundTimer() == 5, "Restore timer without ticking");

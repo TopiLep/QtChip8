@@ -10,6 +10,13 @@ class chip8 {
 public:
     chip8();
 
+    enum class Compatibility { Legacy, Original, Chip48 };
+    void setCompatibility(Compatibility mode) { compatibility = mode; }
+    Compatibility getCompatibility() const { return compatibility; }
+    bool isHalted() const { return error != nullptr; }
+    const char* getError() const { return error ? error : ""; }
+    void releaseKeys();
+
     void cycle();
     void cycleTimers();
     bool loadROM(const std::filesystem::path& path);
@@ -63,7 +70,10 @@ private:
     //keypad
     uint8_t keypad[16]{};
 
-    bool stall = false;
+    Compatibility compatibility = Compatibility::Legacy;
+    const char* error = nullptr;
+    void halt(const char* reason);
+    bool checkMemory(uint16_t address, unsigned int count);
 
     //Op codes\\
 
@@ -99,9 +109,9 @@ private:
     void op_8XY3(uint8_t x, uint8_t y);
     void op_8XY4(uint8_t x, uint8_t y);
     void op_8XY5(uint8_t x, uint8_t y);
-    void op_8XY6(uint8_t x);
+    void op_8XY6(uint8_t x, uint8_t y);
     void op_8XY7(uint8_t x, uint8_t y);
-    void op_8XYE(uint8_t x);
+    void op_8XYE(uint8_t x, uint8_t y);
 
     // 0x9***
     void op_9XY0(uint8_t x, uint8_t y);
