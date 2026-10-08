@@ -1,0 +1,3 @@
+add_executable(chip8_loading_tests chip8_loading_tests.cpp)
+target_link_libraries(chip8_loading_tests PRIVATE chip8)
+add_test(NAME chip8_loading COMMAND chip8_loading_tests)

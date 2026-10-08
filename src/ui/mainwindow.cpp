@@ -117,6 +117,12 @@ MainWindow::MainWindow(QWidget *parent)
                 "Error",
                 "Failed to load state:\n" + path
                 );
+        } else {
+            ui->displaywidget->updateFrameBuffer();
+            m_chip.setDisplayDirty(false);
+            if (m_memoryWindow && m_memoryWindow->isVisible()) {
+                m_memoryWindow->setMemory(m_chip.getMemory(), m_chip.getPC(), m_chip.getI());
+            }
         }
 
         m_state = state;

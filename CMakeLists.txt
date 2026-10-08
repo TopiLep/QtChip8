@@ -5,12 +5,21 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Multimedia)
-
-qt_standard_project_setup()
+include(CTest)
+option(BUILD_GUI "Build the Qt desktop application" ON)
 
 add_subdirectory(src/chip8)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
 
+if(NOT BUILD_GUI)
+    return()
+endif()
+
+find_package(Qt6 6.7 REQUIRED COMPONENTS Core Widgets Multimedia)
+
+qt_standard_project_setup()
 
 qt_add_executable(Chip8Emulator
     src/main.cpp

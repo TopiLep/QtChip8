@@ -185,14 +185,19 @@ bool chip8::loadROM(const std::filesystem::path& path)
     std::streamsize size = file.tellg();
     file.seekg(0, std::ios::beg);
 
-    if (size > (4096 - 0x200)) {
+    if (size <= 0 || size > (4096 - 0x200)) {
+        return false;
+    }
+
+    // Read completely before replacing the running game.
+    uint8_t rom[4096 - 0x200]{};
+    if (!file.read(reinterpret_cast<char*>(rom), size)) {
         return false;
     }
 
     resetEmulatorState();
     memset(memory, 0, sizeof(memory));
-
-    file.read(reinterpret_cast<char*>(&memory[0x200]), size);
+    memcpy(&memory[0x200], rom, static_cast<size_t>(size));
 
     const unsigned int FONTSET_START_ADDRESS = 0x50;
     const uint8_t fontset[80] = {
@@ -328,31 +333,45 @@ bool chip8::loadState(const std::filesystem::path &path)
         return false;
     }
 
-    uint32_t magic;
-
-    file.read(reinterpret_cast<char*>(&magic), sizeof(magic));
-
-    if(magic != 0x43385354) {
+    uint32_t magic = 0;
+    if (!file.read(reinterpret_cast<char*>(&magic), sizeof(magic)) ||
+        magic != 0x43385354) {
         return false;
     }
 
-    file.read(reinterpret_cast<char*>(&pc), sizeof(pc));
-    file.read(reinterpret_cast<char*>(&I), sizeof(I));
-    file.read(reinterpret_cast<char*>(&sp), sizeof(sp));
-    file.read(reinterpret_cast<char*>(V), sizeof(V));
-    file.read(reinterpret_cast<char*>(stack), sizeof(stack));
-    file.read(reinterpret_cast<char*>(&delayTimer), sizeof(delayTimer));
-    file.read(reinterpret_cast<char*>(&soundTimer), sizeof(soundTimer));
-    file.read(reinterpret_cast<char*>(memory), sizeof(memory));
-    file.read(reinterpret_cast<char*>(display), sizeof(display));
+    // Keep the legacy file layout, but commit only a complete, valid state.
+    chip8 loaded;
+    file.read(reinterpret_cast<char*>(&loaded.pc), sizeof(loaded.pc));
+    file.read(reinterpret_cast<char*>(&loaded.I), sizeof(loaded.I));
+    file.read(reinterpret_cast<char*>(&loaded.sp), sizeof(loaded.sp));
+    file.read(reinterpret_cast<char*>(loaded.V), sizeof(loaded.V));
+    file.read(reinterpret_cast<char*>(loaded.stack), sizeof(loaded.stack));
+    file.read(reinterpret_cast<char*>(&loaded.delayTimer), sizeof(loaded.delayTimer));
+    file.read(reinterpret_cast<char*>(&loaded.soundTimer), sizeof(loaded.soundTimer));
+    file.read(reinterpret_cast<char*>(loaded.memory), sizeof(loaded.memory));
+    file.read(reinterpret_cast<char*>(loaded.display), sizeof(loaded.display));
 
-    file.close();
-    if(file.good()) {
-        return true;
-    } else {
-        resetEmulatorState();
+    if (!file || file.peek() != std::char_traits<char>::eof() ||
+        loaded.pc >= sizeof(memory) - 1 || loaded.sp > 16) {
         return false;
     }
+    for (unsigned int i = 0; i < loaded.sp; ++i) {
+        if (loaded.stack[i] >= sizeof(memory) - 1) {
+            return false;
+        }
+    }
+    for (const auto& row : loaded.display) {
+        for (uint8_t pixel : row) {
+            if (pixel > 1) {
+                return false;
+            }
+        }
+    }
+
+    // Key presses belong to the current input session, not the saved game.
+    loaded.displayDirty = true;
+    *this = loaded;
+    return true;
 
 }
 
